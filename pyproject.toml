@@ -1,12 +1,12 @@
 [project]
-name = "zambretti_stfn"
+name = "zambretti_py"
 version = "0.0.1"
 authors = [
   { name="STFN", email="stfndev@protonmail.com" },
 ]
 description = "The Zambretti Algorithm for weather forecasting"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",

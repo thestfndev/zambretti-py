@@ -1,7 +1,7 @@
 import datetime
 import unittest
 
-from zambretti_stfn.zambretti import PressureData, Trend, Zambretti
+from zambretti_py.zambretti import PressureData, Trend, Zambretti
 
 
 class TestPressureTrendCalculation(unittest.TestCase):
