@@ -116,6 +116,35 @@ class Zambretti:
         )
         return round(final_pressure - initial_pressure, 2)
 
+    def _convert_to_sea_level_pressure(
+        self, elevation: int, temperature: float, pressure_data: PressureData
+    ) -> PressureData:
+        """Convert the pressure data to sea level.
+
+        This method converts the pressure data points to sea level pressure,
+        using the formula described in the Zambretti algorithm, check the links
+        in the README for a thorough explanation.
+
+        """
+        converted_to_sea_level_pressure = []
+        for point in pressure_data.points:
+            converted_to_sea_level_pressure.append(
+                (
+                    point[0],
+                    round(
+                        point[1]
+                        * pow(
+                            1
+                            - (0.0065 * elevation)
+                            / (temperature + (0.0065 * elevation) + 273.15),
+                            -5.257,
+                        ),
+                        2,
+                    ),
+                )
+            )
+        return PressureData(points=converted_to_sea_level_pressure)
+
     def calculate_trend(self, pressure_data: PressureData) -> Trend:
         pressure_data = self._truncate_time_data_to_three_last_hours(pressure_data)
         pressure_data = pressure_data.sorted_by_time()
@@ -141,26 +170,24 @@ class Zambretti:
 
     def forecast(
         self,
-        pressure: float,
         elevation: int,
         temperature: float,
         pressure_data: PressureData,
         wind_direction: WindDirection | None = None,
     ) -> str:
         forecast = 0
-        sea_level_pressure = pressure * pow(
-            1 - (0.0065 * elevation) / (temperature + (0.0065 * elevation) + 273.15),
-            -5.257,
+        pressure_data = self._convert_to_sea_level_pressure(
+            elevation, temperature, pressure_data
         )
         trend = self.calculate_trend(pressure_data)
         if trend == trend.UNKNOWN:
             return "Could not determine the pressure trend from available data"
         if trend == Trend.FALLING:
-            forecast = math.floor(127 - 0.12 * sea_level_pressure)
+            forecast = math.floor(127 - 0.12 * pressure_data.points[-1][1])
         if trend == Trend.STEADY:
-            forecast = math.floor(144 - 0.13 * sea_level_pressure)
+            forecast = math.floor(144 - 0.13 * pressure_data.points[-1][1])
         if trend == Trend.RISING:
-            forecast = math.floor(185 - 0.16 * sea_level_pressure)
+            forecast = math.floor(185 - 0.16 * pressure_data.points[-1][1])
 
         if wind_direction:
             forecast += wind_direction.value

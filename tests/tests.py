@@ -86,6 +86,20 @@ class TestPressureTrendCalculation(unittest.TestCase):
             truncated_data_points,
         )
 
+    def test_calculating_sea_level_pressure(self):
+        now = datetime.datetime.now()
+        pressure_data = PressureData(
+            [
+                (now - datetime.timedelta(minutes=20), 1000),
+            ]
+        )
+        zambretti = Zambretti()
+
+        sea_level_pressure = zambretti._convert_to_sea_level_pressure(
+            elevation=100, temperature=10, pressure_data=pressure_data
+        )
+        assert sea_level_pressure == PressureData(points=[(now, 1012.13)])
+
     def test_checking_pressure_difference_falling(self):
         now = datetime.datetime.now()
         pressure_data = PressureData(
