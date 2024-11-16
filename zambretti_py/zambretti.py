@@ -146,8 +146,16 @@ class Zambretti:
         return PressureData(points=converted_to_sea_level_pressure)
 
     def calculate_trend(self, pressure_data: PressureData) -> Trend:
+        """Calculate the trend for the atmospheric pressure.
+
+        This method calculates whether the pressure in the last three hours has
+        been rising, falling, or has been steady.
+        """
         pressure_data = self._truncate_time_data_to_three_last_hours(pressure_data)
         pressure_data = pressure_data.sorted_by_time()
+
+        # the min and max values provided below are constants coming from the
+        # definition of the Zambretti algorithm
         filtered_for_falling = self._filter_time_data_by_pressure_values(
             min_value=985, max_value=1050, pressure_data=pressure_data
         )
@@ -176,6 +184,8 @@ class Zambretti:
         wind_direction: WindDirection | None = None,
     ) -> str:
         forecast = 0
+        if len(pressure_data.points) < 6:
+            return "Minimum 6 pressure readings are required."
         pressure_data = self._convert_to_sea_level_pressure(
             elevation, temperature, pressure_data
         )

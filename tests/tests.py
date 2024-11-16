@@ -229,3 +229,21 @@ class TestPressureTrendCalculation(unittest.TestCase):
             wind_direction=WindDirection.NORTH,
         )
         self.assertEqual(forecast, "Becoming Fine")
+
+    def test_forecasting_requires_minimum_six_pressure_readings(self):
+        now = datetime.datetime.now()
+        pressure_data = PressureData(
+            [
+                (now - datetime.timedelta(hours=2, minutes=59), 1001),
+                (now - datetime.timedelta(hours=2, minutes=49), 1002),
+            ]
+        )
+        zambretti = Zambretti()
+
+        forecast = zambretti.forecast(
+            elevation=90,
+            temperature=25,
+            pressure_data=pressure_data,
+            wind_direction=WindDirection.NORTH,
+        )
+        self.assertEqual(forecast, "Minimum 6 pressure readings are required.")
