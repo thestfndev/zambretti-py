@@ -90,41 +90,41 @@ class TestPressureTrendCalculation(unittest.TestCase):
         now = datetime.datetime.now()
         pressure_data = PressureData(
             [
-                (now - datetime.timedelta(hours=2, minutes=59), 1050.5),
-                (now - datetime.timedelta(hours=2, minutes=49), 1040.0),
-                (now - datetime.timedelta(hours=2, minutes=39), 1030.0),
-                (now - datetime.timedelta(hours=2, minutes=12), 1020.0),
-                (now - datetime.timedelta(hours=1, minutes=19), 1010.0),
-                (now - datetime.timedelta(minutes=20), 1000.0),
+                (now - datetime.timedelta(hours=2, minutes=59), 1054),
+                (now - datetime.timedelta(hours=2, minutes=49), 1053),
+                (now - datetime.timedelta(hours=2, minutes=39), 1052),
+                (now - datetime.timedelta(hours=2, minutes=12), 1040),
+                (now - datetime.timedelta(hours=1, minutes=19), 1039),
+                (now - datetime.timedelta(minutes=20), 1038),
             ]
         )
         zambretti = Zambretti()
 
-        assert zambretti._check_pressure_difference(pressure_data) == -50.5
+        assert zambretti._get_pressure_difference(pressure_data) == -14
 
     def test_checking_pressure_difference_rising(self):
         now = datetime.datetime.now()
         pressure_data = PressureData(
             [
-                (now - datetime.timedelta(hours=2, minutes=59), 1045),
-                (now - datetime.timedelta(hours=2, minutes=49), 1050.50),
-                (now - datetime.timedelta(hours=2, minutes=39), 1060.40),
-                (now - datetime.timedelta(hours=2, minutes=12), 1070.30),
-                (now - datetime.timedelta(hours=1, minutes=19), 1080.20),
-                (now - datetime.timedelta(minutes=20), 1090),
+                (now - datetime.timedelta(hours=2, minutes=59), 1044),
+                (now - datetime.timedelta(hours=2, minutes=49), 1045),
+                (now - datetime.timedelta(hours=2, minutes=39), 1046),
+                (now - datetime.timedelta(hours=2, minutes=12), 1050),
+                (now - datetime.timedelta(hours=1, minutes=19), 1051),
+                (now - datetime.timedelta(minutes=20), 1052),
             ]
         )
         zambretti = Zambretti()
 
-        assert zambretti._check_pressure_difference(pressure_data) == 45
+        assert zambretti._get_pressure_difference(pressure_data) == 6
 
     def test_calculating_trend_falling(self):
         now = datetime.datetime.now()
         pressure_data = PressureData(
             [
-                (now - datetime.timedelta(hours=2, minutes=59), 1002),
-                (now - datetime.timedelta(hours=2, minutes=49), 1001),
-                (now - datetime.timedelta(hours=2, minutes=39), 1000.90),
+                (now - datetime.timedelta(hours=2, minutes=59), 1006),
+                (now - datetime.timedelta(hours=2, minutes=49), 1005),
+                (now - datetime.timedelta(hours=2, minutes=39), 1004.90),
                 (now - datetime.timedelta(hours=2, minutes=12), 1000.80),
                 (now - datetime.timedelta(hours=1, minutes=19), 1000.50),
                 (now - datetime.timedelta(minutes=20), 1000),

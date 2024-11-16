@@ -3,6 +3,8 @@ import math
 from dataclasses import dataclass
 from enum import Enum
 
+from statistics import mean
+
 
 class Trend(Enum):
     FALLING = 1
@@ -91,10 +93,28 @@ class Zambretti:
                 filtered_list.append(point)
         return PressureData(points=filtered_list)
 
-    def _check_pressure_difference(self, pressure_data: PressureData) -> float:
-        initial_pressure = pressure_data.points[0][1]
-        final_pressure = pressure_data.points[-1][1]
-        return final_pressure - initial_pressure
+    def _get_pressure_difference(self, pressure_data: PressureData) -> float:
+        """Get the pressure difference between the start and end of
+         measurements.
+
+        To better handle momentary pressure spikes, the average of the first and
+        last three measurements is used.
+        """
+        initial_pressure = mean(
+            [
+                pressure_data.points[0][1],
+                pressure_data.points[1][1],
+                pressure_data.points[2][1],
+            ]
+        )
+        final_pressure = mean(
+            [
+                pressure_data.points[-1][1],
+                pressure_data.points[-2][1],
+                pressure_data.points[-3][1],
+            ]
+        )
+        return round(final_pressure - initial_pressure, 2)
 
     def calculate_trend(self, pressure_data: PressureData) -> Trend:
         pressure_data = self._truncate_time_data_to_three_last_hours(pressure_data)
@@ -108,13 +128,13 @@ class Zambretti:
         filtered_for_rising = self._filter_time_data_by_pressure_values(
             min_value=947, max_value=1030, pressure_data=pressure_data
         )
-        if self._check_pressure_difference(filtered_for_falling) < -1.6:
+        if self._get_pressure_difference(filtered_for_falling) < -1.6:
             return Trend.FALLING
-        if self._check_pressure_difference(filtered_for_rising) > 1.6:
+        if self._get_pressure_difference(filtered_for_rising) > 1.6:
             return Trend.RISING
         if (
-            self._check_pressure_difference(filtered_for_steady) > -1.6
-            and self._check_pressure_difference(filtered_for_steady) < 1.6
+            self._get_pressure_difference(filtered_for_steady) > -1.6
+            and self._get_pressure_difference(filtered_for_steady) < 1.6
         ):
             return Trend.STEADY
         return Trend.UNKNOWN
