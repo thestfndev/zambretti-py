@@ -7,9 +7,25 @@ The code is heavily based on the [Zambretti Algorithm for Weather Forecasting
 ESP
 example](https://github.com/sassoftware/iot-zambretti-weather-forcasting?tab=readme-ov-file)
 
-Further reading: [Short-Range Local Forecasting with a Digital Barograph using an Algorithm based on the Zambretti Forecaster.](https://integritext.net/DrKFS/zambretti.htm)
+Further reading: [Short-Range Local Forecasting with a Digital Barograph using
+an Algorithm based on the Zambretti
+Forecaster.](https://integritext.net/DrKFS/zambretti.htm)
 
-## Usage
+## Usage notes
+
+Pressure data must be provided in millibars or hPa (those are equivalent).
+Elevation must be provided in meters.
+Temperature must be provided in degrees Celsius.
+
+Minimum 6 readings of atmospheric pressure are required. Best results are when
+the pressure readings span the last three hours, but the code will run on any timespan.
+
+## Technical notes
+
+This project has no dependencies, uses only functions from the Python Standard
+Library. It should run both in Python and MicroPython.
+
+## Example
 
 Example usage with mock values:
 
@@ -42,7 +58,6 @@ print(forecast)
 ```
 
 To calculate for forecast, the Zambretti algorithm requires:
-- the current pressure in millibars or hPa (those are equivalent)
 - elevation above sea level
 - current temperature
 - pressure data from the last three hours, or less.
