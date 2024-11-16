@@ -16,7 +16,7 @@ Example usage with mock values:
 ```
 import datetime
 
-from zambretti_py.zambretti import PressureData, WindDirection, Zambretti
+from zambretti_py import PressureData, WindDirection, Zambretti
 
 now = datetime.datetime.now()
 pressure_data = PressureData(
