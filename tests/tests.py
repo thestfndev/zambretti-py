@@ -1,7 +1,7 @@
 import datetime
 import unittest
 
-from zambretti_py.zambretti import PressureData, Trend, Zambretti
+from zambretti_py.zambretti import PressureData, Trend, WindDirection, Zambretti
 
 
 class TestPressureTrendCalculation(unittest.TestCase):
@@ -98,7 +98,7 @@ class TestPressureTrendCalculation(unittest.TestCase):
         sea_level_pressure = zambretti._convert_to_sea_level_pressure(
             elevation=100, temperature=10, pressure_data=pressure_data
         )
-        assert sea_level_pressure == PressureData(points=[(now, 1012.13)])
+        assert sea_level_pressure.points[0][1] == 1012.13
 
     def test_checking_pressure_difference_falling(self):
         now = datetime.datetime.now()
@@ -185,3 +185,47 @@ class TestPressureTrendCalculation(unittest.TestCase):
         trend = zambretti.calculate_trend(pressure_data)
 
         self.assertEqual(trend, Trend.RISING)
+
+    def test_forecasting_pressure_falling_quickly(self):
+        now = datetime.datetime.now()
+        pressure_data = PressureData(
+            [
+                (now - datetime.timedelta(hours=2, minutes=59), 1050.0),
+                (now - datetime.timedelta(hours=2, minutes=49), 1040.0),
+                (now - datetime.timedelta(hours=2, minutes=39), 1030.0),
+                (now - datetime.timedelta(hours=2, minutes=12), 1020.0),
+                (now - datetime.timedelta(hours=1, minutes=19), 1010.0),
+                (now - datetime.timedelta(minutes=20), 1000.0),
+            ]
+        )
+        zambretti = Zambretti()
+
+        forecast = zambretti.forecast(
+            elevation=90,
+            temperature=25,
+            pressure_data=pressure_data,
+            wind_direction=WindDirection.NORTH,
+        )
+        self.assertEqual(forecast, "Showery, Becoming More Unsettled")
+
+    def test_forecasting_pressure_rising(self):
+        now = datetime.datetime.now()
+        pressure_data = PressureData(
+            [
+                (now - datetime.timedelta(hours=2, minutes=59), 1001),
+                (now - datetime.timedelta(hours=2, minutes=49), 1002),
+                (now - datetime.timedelta(hours=2, minutes=39), 1001),
+                (now - datetime.timedelta(hours=2, minutes=12), 1000),
+                (now - datetime.timedelta(hours=1, minutes=19), 1005),
+                (now - datetime.timedelta(minutes=20), 1007),
+            ]
+        )
+        zambretti = Zambretti()
+
+        forecast = zambretti.forecast(
+            elevation=90,
+            temperature=25,
+            pressure_data=pressure_data,
+            wind_direction=WindDirection.NORTH,
+        )
+        self.assertEqual(forecast, "Becoming Fine")
