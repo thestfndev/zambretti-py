@@ -76,11 +76,9 @@ class Zambretti:
         now = datetime.datetime.now()
         three_hours_ago = now - datetime.timedelta(hours=3)
 
-        truncated_list = []
-
-        for point in pressure_data.points:
-            if three_hours_ago <= point[0]:
-                truncated_list.append(point)
+        truncated_list = [
+            point for point in pressure_data.points if point[0] >= three_hours_ago
+        ]
         return PressureData(points=truncated_list)
 
     def _filter_time_data_by_pressure_values(
@@ -127,21 +125,13 @@ class Zambretti:
 
         """
         converted_to_sea_level_pressure = []
+        sea_level_pressure_calculation = pow(
+            1 - (0.0065 * elevation) / (temperature + (0.0065 * elevation) + 273.15),
+            -5.257,
+        )
         for point in pressure_data.points:
             converted_to_sea_level_pressure.append(
-                (
-                    point[0],
-                    round(
-                        point[1]
-                        * pow(
-                            1
-                            - (0.0065 * elevation)
-                            / (temperature + (0.0065 * elevation) + 273.15),
-                            -5.257,
-                        ),
-                        2,
-                    ),
-                )
+                (point[0], round(point[1] * sea_level_pressure_calculation, 2))
             )
         return PressureData(points=converted_to_sea_level_pressure)
 
