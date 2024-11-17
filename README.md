@@ -11,6 +11,10 @@ Further reading: [Short-Range Local Forecasting with a Digital Barograph using
 an Algorithm based on the Zambretti
 Forecaster.](https://integritext.net/DrKFS/zambretti.htm)
 
+## Python Package
+
+This repository is available as a package in PyPi: [https://pypi.org/project/zambretti-py/](https://pypi.org/project/zambretti-py/)
+
 ## Usage notes
 
 Pressure data must be provided in millibars or hPa (those are equivalent).
