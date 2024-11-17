@@ -48,7 +48,6 @@ pressure_data = PressureData(
 zambretti = Zambretti()
 
 forecast = zambretti.forecast(
-    pressure=1013.0,
     elevation=90,
     temperature=25,
     pressure_data=pressure_data,

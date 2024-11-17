@@ -1,6 +1,6 @@
 [project]
 name = "zambretti_py"
-version = "0.0.1"
+version = "0.0.3"
 authors = [
   { name="STFN", email="stfndev@protonmail.com" },
 ]
@@ -12,6 +12,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+keywords = ["weather", "forecasting", "zambretti"]
 
 [project.urls]
 Homepage = "https://github.com/thestfndev/zambretti-py"
