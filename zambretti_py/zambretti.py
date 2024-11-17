@@ -179,15 +179,19 @@ class Zambretti:
         pressure_data = self._convert_to_sea_level_pressure(
             elevation, temperature, pressure_data
         )
+
         trend = self.calculate_trend(pressure_data)
-        if trend == trend.UNKNOWN:
-            return "Could not determine the pressure trend from available data"
-        if trend == Trend.FALLING:
-            forecast = math.floor(127 - 0.12 * pressure_data.points[-1][1])
-        if trend == Trend.STEADY:
-            forecast = math.floor(144 - 0.13 * pressure_data.points[-1][1])
-        if trend == Trend.RISING:
-            forecast = math.floor(185 - 0.16 * pressure_data.points[-1][1])
+
+        latest_pressure = pressure_data.points[-1][1]
+        match trend:
+            case trend.UNKNOWN:
+                return "Could not determine the pressure trend from available data"
+            case Trend.FALLING:
+                forecast = math.floor(127 - 0.12 * latest_pressure)
+            case Trend.STEADY:
+                forecast = math.floor(144 - 0.13 * latest_pressure)
+            case Trend.RISING:
+                forecast = math.floor(185 - 0.16 * latest_pressure)
 
         if wind_direction:
             forecast += wind_direction.value
