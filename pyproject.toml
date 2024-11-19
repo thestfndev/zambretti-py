@@ -1,6 +1,6 @@
 [project]
 name = "zambretti_py"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
   { name="STFN", email="stfndev@protonmail.com" },
 ]
