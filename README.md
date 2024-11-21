@@ -17,6 +17,18 @@ This repository is available as a package in PyPi: [https://pypi.org/project/zam
 
 ## Usage notes
 
+To calculate for forecast, the Zambretti algorithm requires:
+- elevation above sea level
+- current temperature
+- pressure data from the last three hours, or less.
+    - data points older than three hours will be removed
+    - the pressure data is expected to be provided as a list of tuples, each
+      tuple consisting of a datetime.datetime object, and the pressure as float
+- optional wind direction, denoting the direction from which the wind is
+  flowing. This has a minor effect on the forecast and can be omitted.
+
+The result will be a text description of the forecasted weather. 
+
 Pressure data must be provided in millibars or hPa (those are equivalent).
 Elevation must be provided in meters.
 Temperature must be provided in degrees Celsius.
@@ -29,9 +41,9 @@ the pressure readings span the last three hours, but the code will run on any ti
 This project has no dependencies, uses only functions from the Python Standard
 Library. It should run both in Python and MicroPython.
 
-## Example
+## Examples
 
-Example usage with mock values:
+### Example usage with provided pressure data:
 
 ```
 import datetime
@@ -60,14 +72,66 @@ forecast = zambretti.forecast(
 print(forecast)
 ```
 
-To calculate for forecast, the Zambretti algorithm requires:
-- elevation above sea level
-- current temperature
-- pressure data from the last three hours, or less.
-    - data points older than three hours will be removed
-    - the pressure data is expected to be provided as a list of tuples, each
-      tuple consisting of a datetime.datetime object, and the pressure as float
-- optional wind direction, denoting the direction from which the wind is
-  flowing. This has a minor effect on the forecast and can be omitted.
+### Example usage with loading pressure data from a CSV file:
 
-The result will be a text description of the forecasted weather. 
+If you have the pressure history in a CSV file such as this one:
+
+| state  | last_changed                 |
+|----------------|---------------------------|
+|  988.6          | 2024-11-19T11:33:32.706Z  |
+| 988.5          | 2024-11-19T11:34:06.863Z  |
+| 988.4          | 2024-11-19T11:37:06.887Z  |
+
+That file can be loaded into `PressureData` by using a `PressureData.from_csv_file`:
+
+
+```
+from zambretti_py import PressureData, WindDirection, Zambretti
+
+pressure_data = PressureData.from_csv_file(
+    fname="history.csv",
+    timestamp_column_position=1,
+    pressure_column_position=0,
+    skip_header_rows=1,
+    strptime_template="%Y-%m-%dT%H:%M:%S.%fZ",
+)
+
+zambretti = Zambretti()
+
+forecast = zambretti.forecast(
+    elevation=75,
+    temperature=3,
+    pressure_data=pressure_data,
+    wind_direction=WindDirection.SOUTH,
+)
+print(forecast)
+```
+
+### Example usage with a CSV file generated in Home Assistant:
+
+When you have a sensor in Home Assistant, you can export its history from the
+web interface, the result will be a CSV file with this schema:
+
+| entity_id       | state  | last_changed                 |
+|--------------|----------------|---------------------------|
+| sensor.pressure | 988.6          | 2024-11-19T11:33:32.706Z  |
+| sensor.pressure | 988.5          | 2024-11-19T11:34:06.863Z  |
+| sensor.pressure | 988.4          | 2024-11-19T11:37:06.887Z  |
+
+That file can be loaded into `PressureData` by using `PressureData.from_home_assistant_csv`:
+
+```
+from zambretti_py import PressureData, WindDirection, Zambretti
+
+pressure_data = PressureData.from_home_assistant_csv("history.csv")
+
+zambretti = Zambretti()
+
+forecast = zambretti.forecast(
+    elevation=75,
+    temperature=3,
+    pressure_data=pressure_data,
+    wind_direction=WindDirection.SOUTH,
+)
+print(forecast)
+```

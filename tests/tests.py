@@ -1,7 +1,95 @@
+import csv
 import datetime
+import tempfile
 import unittest
 
 from zambretti_py.zambretti import PressureData, Trend, WindDirection, Zambretti
+
+
+class TestLoadingGenericCSVFile(unittest.TestCase):
+    def test_loading_csv_happy_path(self):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            with open(tmpdirname + "history.csv", "w", newline="") as csvfile:
+                history = csv.writer(csvfile, delimiter=",")
+                history.writerow(["state", "last_changed"])
+                history.writerow(["988.6", "2024-11-19T11:33:32.706Z"])
+                history.writerow(["988.5", "2024-11-19T11:34:06.863Z"])
+                history.writerow(["988.4", "2024-11-19T11:37:06.887Z"])
+
+            pressure_data = PressureData.from_csv_file(
+                fname=tmpdirname + "history.csv",
+                timestamp_column_position=1,
+                pressure_column_position=0,
+                skip_header_rows=1,
+                strptime_template="%Y-%m-%dT%H:%M:%S.%fZ",
+            )
+
+            expected_pd = PressureData(
+                points=[
+                    (datetime.datetime(2024, 11, 19, 11, 33, 32, 706000), 988.6),
+                    (datetime.datetime(2024, 11, 19, 11, 34, 6, 863000), 988.5),
+                    (datetime.datetime(2024, 11, 19, 11, 37, 6, 887000), 988.4),
+                ]
+            )
+
+            self.assertEqual(pressure_data, expected_pd)
+
+    def test_loading_csv_ignores_empty_readings(self):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            with open(tmpdirname + "history.csv", "w", newline="") as csvfile:
+                history = csv.writer(csvfile, delimiter=",")
+                history.writerow(["state", "last_changed"])
+                history.writerow(["unavailable", "2024-11-19T11:33:32.706Z"])
+                history.writerow(["988.5", "2024-11-19T11:34:06.863Z"])
+                history.writerow(["988.4", "2024-11-19T11:37:06.887Z"])
+
+            pressure_data = PressureData.from_csv_file(
+                fname=tmpdirname + "history.csv",
+                timestamp_column_position=1,
+                pressure_column_position=0,
+                skip_header_rows=1,
+                strptime_template="%Y-%m-%dT%H:%M:%S.%fZ",
+            )
+
+            expected_pd = PressureData(
+                points=[
+                    (datetime.datetime(2024, 11, 19, 11, 34, 6, 863000), 988.5),
+                    (datetime.datetime(2024, 11, 19, 11, 37, 6, 887000), 988.4),
+                ]
+            )
+
+            self.assertEqual(pressure_data, expected_pd)
+
+
+class TestLoadingCSVFromHomeAssistant(unittest.TestCase):
+    def test_loading_csv_happy_path(self):
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            with open(tmpdirname + "history.csv", "w", newline="") as csvfile:
+                history = csv.writer(csvfile, delimiter=",")
+                history.writerow(["entity_id", "state", "last_changed"])
+                history.writerow(
+                    ["sensor.pressure_2", "988.6", "2024-11-19T11:33:32.706Z"]
+                )
+                history.writerow(
+                    ["sensor.pressure_2", "988.5", "2024-11-19T11:34:06.863Z"]
+                )
+                history.writerow(
+                    ["sensor.pressure_2", "988.4", "2024-11-19T11:37:06.887Z"]
+                )
+
+            pressure_data = PressureData.from_home_assistant_csv(
+                tmpdirname + "history.csv"
+            )
+
+            expected_pd = PressureData(
+                points=[
+                    (datetime.datetime(2024, 11, 19, 11, 33, 32, 706000), 988.6),
+                    (datetime.datetime(2024, 11, 19, 11, 34, 6, 863000), 988.5),
+                    (datetime.datetime(2024, 11, 19, 11, 37, 6, 887000), 988.4),
+                ]
+            )
+
+            self.assertEqual(pressure_data, expected_pd)
 
 
 class TestPressureTrendCalculation(unittest.TestCase):

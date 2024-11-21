@@ -1,3 +1,4 @@
+import csv
 import datetime
 import math
 from dataclasses import dataclass
@@ -26,6 +27,56 @@ class PressureData:
 
     def sorted_by_time(self):
         return PressureData(points=sorted(self.points, key=lambda x: x[0]))
+
+    @classmethod
+    def from_csv_file(
+        cls,
+        fname: str,
+        timestamp_column_position: int,
+        pressure_column_position: int,
+        skip_header_rows: int,
+        strptime_template: str,
+    ) -> "PressureData":
+        """Create PressureData object from a CSV file.
+
+        This method can be used generate the PressureData object from a
+        CSV file.
+        """
+        clean_pressure_data = []
+        with open(fname, "r") as csv_file:
+            reader = csv.reader(csv_file)
+            # skip the header
+            for _ in range(skip_header_rows):
+                reader.__next__()
+            for row in reader:
+                timestamp = datetime.datetime.strptime(
+                    row[timestamp_column_position], strptime_template
+                )
+                try:
+                    clean_pressure_data.append(
+                        (timestamp, float(row[pressure_column_position]))
+                    )
+                except Exception:
+                    # most probably an empty reading
+                    continue
+
+        return cls(clean_pressure_data)
+
+    @classmethod
+    def from_home_assistant_csv(cls, fname: str) -> "PressureData":
+        """Create PressureData object from a HomeAssistant CSV.
+
+        This is a helper method to generate the PressureData object from a
+        typical CSV file that can be downloaded from a HomeAssistant sensor
+        page.
+        """
+        return PressureData.from_csv_file(
+            fname=fname,
+            timestamp_column_position=2,
+            pressure_column_position=1,
+            skip_header_rows=1,
+            strptime_template="%Y-%m-%dT%H:%M:%S.%fZ",
+        )
 
 
 class Zambretti:
