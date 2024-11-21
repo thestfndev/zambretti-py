@@ -193,6 +193,10 @@ class Zambretti:
         been rising, falling, or has been steady.
         """
         pressure_data = self._truncate_time_data_to_three_last_hours(pressure_data)
+
+        if len(pressure_data.points) < 6:
+            raise ValueError("Minimum 6 pressure readings are required.")
+
         pressure_data = pressure_data.sorted_by_time()
 
         # the min and max values provided below are constants coming from the
@@ -225,8 +229,6 @@ class Zambretti:
         wind_direction: WindDirection | None = None,
     ) -> str:
         forecast = 0
-        if len(pressure_data.points) < 6:
-            return "Minimum 6 pressure readings are required."
         pressure_data = self._convert_to_sea_level_pressure(
             elevation, temperature, pressure_data
         )

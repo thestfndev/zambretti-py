@@ -328,10 +328,10 @@ class TestPressureTrendCalculation(unittest.TestCase):
         )
         zambretti = Zambretti()
 
-        forecast = zambretti.forecast(
-            elevation=90,
-            temperature=25,
-            pressure_data=pressure_data,
-            wind_direction=WindDirection.NORTH,
-        )
-        self.assertEqual(forecast, "Minimum 6 pressure readings are required.")
+        with self.assertRaises(ValueError):
+            zambretti.forecast(
+                elevation=90,
+                temperature=25,
+                pressure_data=pressure_data,
+                wind_direction=WindDirection.NORTH,
+            )
