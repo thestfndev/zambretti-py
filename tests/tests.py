@@ -318,6 +318,85 @@ class TestPressureTrendCalculation(unittest.TestCase):
         )
         self.assertEqual(forecast, "Becoming Fine")
 
+    def test_forecasting_with_high_pressure(self):
+        now = datetime.datetime.now()
+        pressure_data = PressureData(
+            [
+                (now - datetime.timedelta(hours=2, minutes=59), 1035),
+                (now - datetime.timedelta(hours=2, minutes=59), 1035),
+                (now - datetime.timedelta(hours=2, minutes=59), 1035),
+                (now - datetime.timedelta(hours=2, minutes=59), 1034),
+                (now - datetime.timedelta(hours=2, minutes=59), 1033),
+                (now - datetime.timedelta(hours=2, minutes=59), 1033),
+                (now - datetime.timedelta(hours=2, minutes=59), 1033),
+                (now - datetime.timedelta(hours=2, minutes=59), 1033),
+                (now - datetime.timedelta(hours=2, minutes=59), 1031),
+                (now - datetime.timedelta(hours=2, minutes=59), 1031),
+                (now - datetime.timedelta(hours=2, minutes=49), 1032),
+                (now - datetime.timedelta(hours=2, minutes=39), 1032),
+                (now - datetime.timedelta(hours=2, minutes=12), 1032),
+                (now - datetime.timedelta(hours=1, minutes=19), 1032),
+                (now - datetime.timedelta(minutes=20), 1035),
+            ]
+        )
+        zambretti = Zambretti()
+
+        forecast = zambretti.forecast(
+            elevation=90,
+            temperature=25,
+            pressure_data=pressure_data,
+            wind_direction=WindDirection.NORTH,
+        )
+        self.assertEqual(forecast, "Settled Fine")
+
+    def test_forecasting_with_low_pressure(self):
+        now = datetime.datetime.now()
+        pressure_data = PressureData(
+            [
+                (now - datetime.timedelta(hours=2, minutes=59), 971),
+                (now - datetime.timedelta(hours=2, minutes=49), 972),
+                (now - datetime.timedelta(hours=2, minutes=39), 971),
+                (now - datetime.timedelta(hours=2, minutes=12), 970),
+                (now - datetime.timedelta(hours=1, minutes=19), 975),
+                (now - datetime.timedelta(minutes=20), 977),
+                (now - datetime.timedelta(minutes=10), 977),
+            ]
+        )
+        zambretti = Zambretti()
+
+        forecast = zambretti.forecast(
+            elevation=90,
+            temperature=25,
+            pressure_data=pressure_data,
+            wind_direction=WindDirection.NORTH,
+        )
+        self.assertEqual(forecast, "Rather Unsettled, Clearing Later")
+
+    def test_forecasting_with_impossibly_high_pressure(self):
+        now = datetime.datetime.now()
+        pressure_data = PressureData(
+            [
+                (now - datetime.timedelta(hours=2, minutes=59), 1071),
+                (now - datetime.timedelta(hours=2, minutes=49), 1072),
+                (now - datetime.timedelta(hours=2, minutes=39), 1071),
+                (now - datetime.timedelta(hours=2, minutes=12), 1070),
+                (now - datetime.timedelta(hours=1, minutes=19), 1075),
+                (now - datetime.timedelta(minutes=20), 1077),
+                (now - datetime.timedelta(minutes=10), 1077),
+            ]
+        )
+        zambretti = Zambretti()
+
+        forecast = zambretti.forecast(
+            elevation=90,
+            temperature=25,
+            pressure_data=pressure_data,
+            wind_direction=WindDirection.NORTH,
+        )
+        self.assertEqual(
+            forecast, "Could not determine the pressure trend from available data"
+        )
+
     def test_forecasting_requires_minimum_six_pressure_readings(self):
         now = datetime.datetime.now()
         pressure_data = PressureData(

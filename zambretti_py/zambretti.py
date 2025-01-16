@@ -146,24 +146,46 @@ class Zambretti:
         """Get the pressure difference between the start and end of
          measurements.
 
-        To better handle momentary pressure spikes, the average of the first and
-        last three measurements is used.
+        To better handle momentary pressure spikes, if there is enough readings
+        the average of the first and last X measurements is used.
         """
-        initial_pressure = mean(
-            [
-                pressure_data.points[0][1],
-                pressure_data.points[1][1],
-                pressure_data.points[2][1],
-            ]
-        )
-        final_pressure = mean(
-            [
-                pressure_data.points[-1][1],
-                pressure_data.points[-2][1],
-                pressure_data.points[-3][1],
-            ]
-        )
-        return round(final_pressure - initial_pressure, 2)
+        initial_pressure = 0.0
+        final_pressure = 0.0
+
+        if len(pressure_data.points) == 1:
+            initial_pressure = pressure_data.points[0][1]
+            final_pressure = pressure_data.points[-1][1]
+
+        if len(pressure_data.points) == 2:
+            initial_pressure = mean(
+                data=[
+                    pressure_data.points[0][1],
+                    pressure_data.points[1][1],
+                ]
+            )
+            final_pressure = mean(
+                data=[
+                    pressure_data.points[-1][1],
+                    pressure_data.points[-2][1],
+                ]
+            )
+
+        if len(pressure_data.points) >= 3:
+            initial_pressure = mean(
+                data=[
+                    pressure_data.points[0][1],
+                    pressure_data.points[1][1],
+                    pressure_data.points[2][1],
+                ]
+            )
+            final_pressure = mean(
+                data=[
+                    pressure_data.points[-1][1],
+                    pressure_data.points[-2][1],
+                    pressure_data.points[-3][1],
+                ]
+            )
+        return round(final_pressure - initial_pressure, ndigits=2)
 
     def _convert_to_sea_level_pressure(
         self, elevation: int, temperature: float, pressure_data: PressureData
@@ -210,11 +232,18 @@ class Zambretti:
         filtered_for_rising = self._filter_time_data_by_pressure_values(
             min_value=947, max_value=1030, pressure_data=pressure_data
         )
-        if self._get_pressure_difference(filtered_for_falling) < -1.6:
-            return Trend.FALLING
-        if self._get_pressure_difference(filtered_for_rising) > 1.6:
-            return Trend.RISING
+
         if (
+            filtered_for_falling.points
+            and self._get_pressure_difference(filtered_for_falling) < -1.6
+        ):
+            return Trend.FALLING
+        if (
+            filtered_for_rising.points
+            and self._get_pressure_difference(filtered_for_rising) > 1.6
+        ):
+            return Trend.RISING
+        if filtered_for_steady.points and (
             self._get_pressure_difference(filtered_for_steady) > -1.6
             and self._get_pressure_difference(filtered_for_steady) < 1.6
         ):
